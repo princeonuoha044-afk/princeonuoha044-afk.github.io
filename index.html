@@ -1,6 +1,362 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Swift Cargo Logistics — Freight, Warehousing &amp; Last-Mile Delivery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0C1B2A;
+    --steel:#33506C;
+    --amber:#E2792E;
+    --fog:#EEF0F2;
+    --line:#4C7A6B;
+    --paper:#FFFFFF;
+    --muted:#5B7086;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:'Work Sans', sans-serif;
+    color:var(--ink);
+    background:var(--paper);
+    line-height:1.55;
+  }
+  h1,h2,h3, .eyebrow{
+    font-family:'Barlow Condensed', sans-serif;
+    letter-spacing:0.01em;
+  }
+  a{color:inherit; text-decoration:none;}
+  img{max-width:100%; display:block;}
+  .wrap{max-width:1140px; margin:0 auto; padding:0 28px;}
+
+  :focus-visible{outline:3px solid var(--amber); outline-offset:3px;}
+
+  /* NAV */
+  header.nav{
+    position:sticky; top:0; z-index:50;
+    background:var(--ink);
+    border-bottom:1px solid rgba(255,255,255,0.08);
+  }
+  .nav-inner{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 28px;
+    max-width:1140px; margin:0 auto;
+  }
+  .brand{
+    color:var(--paper); font-family:'Barlow Condensed', sans-serif;
+    font-weight:700; font-size:22px; letter-spacing:0.03em;
+    display:flex; align-items:center; gap:10px;
+  }
+  .brand .dot{width:9px; height:9px; border-radius:50%; background:var(--amber); display:inline-block;}
+  nav.links{display:flex; gap:32px;}
+  nav.links a{
+    color:#C7D2DC; font-size:15px; font-weight:500;
+    transition:color .15s ease;
+  }
+  nav.links a:hover{color:var(--paper);}
+  .nav-cta{
+    background:var(--amber); color:var(--ink); font-weight:600;
+    padding:10px 20px; border-radius:2px; font-size:14px;
+  }
+  .nav-toggle{display:none;}
+
+  /* HERO */
+  .hero{
+    background:var(--ink);
+    color:var(--paper);
+    padding:88px 0 96px;
+    position:relative;
+    overflow:hidden;
+  }
+  .hero-grid{
+    display:grid; grid-template-columns:1.1fr 0.9fr; gap:56px; align-items:center;
+  }
+  .eyebrow{
+    color:var(--amber); font-weight:600; font-size:16px;
+    text-transform:uppercase; letter-spacing:0.14em;
+    margin-bottom:18px; display:flex; align-items:center; gap:10px;
+  }
+  .eyebrow::before{content:""; width:26px; height:2px; background:var(--amber); display:inline-block;}
+  .hero h1{
+    font-size:clamp(40px, 5.4vw, 68px);
+    font-weight:700; line-height:1.03; letter-spacing:0.005em;
+    margin-bottom:22px;
+  }
+  .hero p.lede{
+    color:#C7D2DC; font-size:18px; max-width:480px; margin-bottom:34px;
+  }
+  .hero-actions{display:flex; gap:14px; flex-wrap:wrap;}
+  .btn{
+    display:inline-block; padding:14px 26px; font-weight:600; font-size:15px;
+    border-radius:2px; transition:transform .15s ease, background .15s ease;
+  }
+  .btn-primary{background:var(--amber); color:var(--ink);}
+  .btn-primary:hover{transform:translateY(-2px);}
+  .btn-ghost{border:1px solid rgba(255,255,255,0.35); color:var(--paper);}
+  .btn-ghost:hover{border-color:var(--paper);}
+
+  /* Route line signature */
+  .route-card{
+    background:#122c42; border:1px solid rgba(255,255,255,0.08);
+    border-radius:4px; padding:28px 26px 24px;
+  }
+  .route-card .route-label{
+    display:flex; justify-content:space-between; font-size:13px; color:#9FB2C4;
+    text-transform:uppercase; letter-spacing:0.08em; margin-bottom:22px;
+  }
+  .route-track{
+    position:relative; height:2px; background:rgba(255,255,255,0.14); margin:0 4px 18px;
+  }
+  .route-track::before{
+    content:""; position:absolute; left:0; top:0; height:100%; width:64%;
+    background:var(--line);
+  }
+  .route-dot{
+    position:absolute; top:50%; left:64%; width:14px; height:14px; border-radius:50%;
+    background:var(--amber); transform:translate(-50%,-50%);
+    box-shadow:0 0 0 5px rgba(226,121,46,0.18);
+    animation:pulse 2.2s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{box-shadow:0 0 0 5px rgba(226,121,46,0.18);}
+    50%{box-shadow:0 0 0 9px rgba(226,121,46,0.08);}
+  }
+  .route-endpoints{display:flex; justify-content:space-between; font-size:13px; color:#C7D2DC; margin-bottom:26px;}
+  .route-stats{display:grid; grid-template-columns:1fr 1fr; gap:18px; border-top:1px solid rgba(255,255,255,0.08); padding-top:22px;}
+  .route-stats .num{font-family:'Barlow Condensed', sans-serif; font-size:30px; font-weight:700; color:var(--paper);}
+  .route-stats .lbl{font-size:12.5px; color:#9FB2C4; text-transform:uppercase; letter-spacing:0.06em;}
+
+  @media (prefers-reduced-motion: reduce){
+    .route-dot{animation:none;}
+  }
+
+  /* SECTION shared */
+  section{padding:88px 0;}
+  .section-head{max-width:620px; margin-bottom:52px;}
+  .section-head .eyebrow{color:var(--steel);}
+  .section-head .eyebrow::before{background:var(--steel);}
+  .section-head h2{
+    font-size:clamp(30px, 3.6vw, 42px); font-weight:700; line-height:1.08; margin-bottom:14px;
+  }
+  .section-head p{color:var(--muted); font-size:17px;}
+
+  /* SERVICES */
+  .services{background:var(--fog);}
+  .service-grid{
+    display:grid; grid-template-columns:repeat(3, 1fr); gap:2px;
+    background:rgba(12,27,42,0.08);
+    border:1px solid rgba(12,27,42,0.08);
+  }
+  .service-card{
+    background:var(--paper); padding:34px 30px; min-height:220px;
+    display:flex; flex-direction:column; gap:14px;
+  }
+  .service-card .mark{
+    width:38px; height:38px; border:2px solid var(--steel); border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--steel); font-family:'Barlow Condensed', sans-serif; font-weight:700; font-size:16px;
+  }
+  .service-card h3{font-size:21px; font-weight:600; letter-spacing:0.005em;}
+  .service-card p{color:var(--muted); font-size:15px;}
+
+  /* WHY / STATS STRIP */
+  .why{background:var(--ink); color:var(--paper);}
+  .why-grid{display:grid; grid-template-columns:1fr 1fr; gap:64px; align-items:start;}
+  .why h2{font-size:clamp(28px,3.4vw,38px); font-weight:700; margin-bottom:18px;}
+  .why p{color:#C7D2DC; font-size:16.5px; margin-bottom:30px;}
+  .why-list{display:flex; flex-direction:column; gap:18px;}
+  .why-list li{list-style:none; display:flex; gap:14px; align-items:flex-start; font-size:15.5px; color:#DDE5EC;}
+  .why-list li::before{content:"—"; color:var(--amber); font-weight:700; flex-shrink:0;}
+  .stat-col{display:grid; grid-template-columns:1fr 1fr; gap:28px;}
+  .stat{border-top:1px solid rgba(255,255,255,0.14); padding-top:18px;}
+  .stat .num{font-family:'Barlow Condensed', sans-serif; font-weight:700; font-size:44px; color:var(--amber); line-height:1;}
+  .stat .lbl{font-size:13.5px; color:#9FB2C4; margin-top:8px; text-transform:uppercase; letter-spacing:0.05em;}
+
+  /* CONTACT */
+  .contact-grid{display:grid; grid-template-columns:1fr 1fr; gap:64px;}
+  .contact-info h2{font-size:clamp(28px,3.4vw,38px); font-weight:700; margin-bottom:16px;}
+  .contact-info p{color:var(--muted); font-size:16.5px; margin-bottom:28px; max-width:420px;}
+  .info-row{display:flex; gap:14px; padding:16px 0; border-top:1px solid rgba(12,27,42,0.1);}
+  .info-row:last-child{border-bottom:1px solid rgba(12,27,42,0.1);}
+  .info-row .lbl{font-size:12.5px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); width:110px; flex-shrink:0; padding-top:2px;}
+  .info-row .val{font-size:15.5px; font-weight:500;}
+
+  form{display:flex; flex-direction:column; gap:16px;}
+  .field label{display:block; font-size:13px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); margin-bottom:7px;}
+  .field input, .field select, .field textarea{
+    width:100%; border:1px solid rgba(12,27,42,0.18); border-radius:2px;
+    padding:12px 14px; font-family:'Work Sans', sans-serif; font-size:15px; color:var(--ink);
+    background:var(--paper);
+  }
+  .field textarea{resize:vertical; min-height:100px;}
+  .field input:focus, .field select:focus, .field textarea:focus{border-color:var(--steel);}
+  .row-2{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  .submit-btn{
+    background:var(--ink); color:var(--paper); font-weight:600; font-size:15px;
+    padding:14px 26px; border:none; border-radius:2px; cursor:pointer; margin-top:6px;
+    transition:background .15s ease;
+  }
+  .submit-btn:hover{background:var(--steel);}
+  .form-note{font-size:13px; color:var(--muted); margin-top:2px;}
+
+  /* FOOTER */
+  footer{background:var(--ink); color:#9FB2C4; padding:38px 0;}
+  .footer-inner{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; font-size:14px;}
+  .footer-inner .brand{font-size:18px;}
+
+  /* RESPONSIVE */
+  @media (max-width: 860px){
+    .hero-grid, .why-grid, .contact-grid{grid-template-columns:1fr;}
+    .service-grid{grid-template-columns:1fr;}
+    nav.links{display:none;}
+    .row-2{grid-template-columns:1fr;}
+  }
+</style>
+</head>
 <body>
-<h1>Hello, my name is Prince</h1>
-<p>Welcome to my website!</p>
+
+<header class="nav">
+  <div class="nav-inner">
+    <div class="brand"><span class="dot"></span>SWIFT CARGO LOGISTICS</div>
+    <nav class="links">
+      <a href="#services">Services</a>
+      <a href="#why">Why Us</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <a href="#contact" class="nav-cta">Get a Quote</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="eyebrow">Freight &amp; Distribution</div>
+      <h1>Your cargo, moving on schedule — every time.</h1>
+      <p class="lede">We handle freight forwarding, warehousing, and last-mile delivery across the region, so your shipments arrive on time without you chasing updates.</p>
+      <div class="hero-actions">
+        <a href="#contact" class="btn btn-primary">Request a Quote</a>
+        <a href="#services" class="btn btn-ghost">See Our Services</a>
+      </div>
+    </div>
+    <div class="route-card">
+      <div class="route-label"><span>Origin: Port Harcourt</span><span>Destination: Lagos</span></div>
+      <div class="route-track"><div class="route-dot"></div></div>
+      <div class="route-endpoints"><span>Dispatched</span><span>In Transit</span><span>Delivered</span></div>
+      <div class="route-stats">
+        <div><div class="num">98.4%</div><div class="lbl">On-Time Delivery</div></div>
+        <div><div class="num">24/7</div><div class="lbl">Shipment Tracking</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="services" id="services">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">What We Do</div>
+      <h2>End-to-end logistics, under one roof.</h2>
+      <p>From the warehouse floor to the customer's door, we manage every leg of the move.</p>
+    </div>
+    <div class="service-grid">
+      <div class="service-card">
+        <div class="mark">01</div>
+        <h3>Freight Forwarding</h3>
+        <p>Road and inter-state freight coordination with real-time shipment visibility.</p>
+      </div>
+      <div class="service-card">
+        <div class="mark">02</div>
+        <h3>Warehousing</h3>
+        <p>Secure, climate-aware storage with inventory tracking built in.</p>
+      </div>
+      <div class="service-card">
+        <div class="mark">03</div>
+        <h3>Last-Mile Delivery</h3>
+        <p>Reliable local delivery with proof-of-delivery on every drop.</p>
+      </div>
+      <div class="service-card">
+        <div class="mark">04</div>
+        <h3>Customs Clearance</h3>
+        <p>Documentation and clearance handled so your goods don't sit at port.</p>
+      </div>
+      <div class="service-card">
+        <div class="mark">05</div>
+        <h3>Fleet Management</h3>
+        <p>A maintained, tracked fleet sized to your shipment volume.</p>
+      </div>
+      <div class="service-card">
+        <div class="mark">06</div>
+        <h3>Shipment Tracking</h3>
+        <p>Live status updates from dispatch to delivery, no phone calls needed.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="why" id="why">
+  <div class="wrap why-grid">
+    <div>
+      <div class="eyebrow" style="color:var(--amber);">Why Businesses Choose Us</div>
+      <h2>Built for businesses that can't afford delays.</h2>
+      <p>We know a late shipment costs more than a fee — it costs trust. That's why our operations are built around predictability first.</p>
+      <ul class="why-list">
+        <li>Dedicated route planning for every client, not generic scheduling.</li>
+        <li>Direct line to a dispatcher — no ticket queues.</li>
+        <li>Transparent pricing with no surprise fees at delivery.</li>
+      </ul>
+    </div>
+    <div class="stat-col">
+      <div class="stat"><div class="num">12+</div><div class="lbl">Years Operating</div></div>
+      <div class="stat"><div class="num">340+</div><div class="lbl">Businesses Served</div></div>
+      <div class="stat"><div class="num">98.4%</div><div class="lbl">On-Time Rate</div></div>
+      <div class="stat"><div class="num">24/7</div><div class="lbl">Dispatch Support</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="wrap contact-grid">
+    <div class="contact-info">
+      <div class="eyebrow">Get In Touch</div>
+      <h2>Let's move your next shipment.</h2>
+      <p>Tell us what you're shipping and where — we'll get back to you with a quote within one business day.</p>
+      <div class="info-row"><div class="lbl">Phone</div><div class="val">+234 800 000 0000</div></div>
+      <div class="info-row"><div class="lbl">Email</div><div class="val">hello@swiftcargologistics.com</div></div>
+      <div class="info-row"><div class="lbl">Office</div><div class="val">Port Harcourt, Rivers State, Nigeria</div></div>
+      <div class="info-row"><div class="lbl">Hours</div><div class="val">Mon–Sat, 8:00am–6:00pm</div></div>
+    </div>
+    <form>
+      <div class="row-2">
+        <div class="field"><label for="name">Full Name</label><input id="name" type="text" placeholder="Your name"></div>
+        <div class="field"><label for="phone">Phone</label><input id="phone" type="tel" placeholder="Your phone number"></div>
+      </div>
+      <div class="field"><label for="email">Email</label><input id="email" type="email" placeholder="you@company.com"></div>
+      <div class="field">
+        <label for="service">Service Needed</label>
+        <select id="service">
+          <option>Freight Forwarding</option>
+          <option>Warehousing</option>
+          <option>Last-Mile Delivery</option>
+          <option>Customs Clearance</option>
+          <option>Not sure yet</option>
+        </select>
+      </div>
+      <div class="field"><label for="details">Shipment Details</label><textarea id="details" placeholder="What are you shipping, and where from/to?"></textarea></div>
+      <button type="submit" class="submit-btn">Send Request</button>
+      <p class="form-note">This form doesn't send yet — see the note below on connecting it.</p>
+    </form>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap footer-inner">
+    <div class="brand"><span class="dot" style="width:8px;height:8px;border-radius:50%;background:var(--amber);display:inline-block;margin-right:8px;"></span>Swift Cargo Logistics</div>
+    <div>&copy; 2026 Swift Cargo Logistics. All rights reserved.</div>
+  </div>
+</footer>
+
 </body>
 </html>
