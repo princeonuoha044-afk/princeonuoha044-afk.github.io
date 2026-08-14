@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
   :root{
     --ink:#0C1B2A;
@@ -135,7 +137,7 @@
   }
 
   /* SECTION shared */
-  section{padding:88px 0;}
+  section{padding:88px 0; scroll-margin-top:80px;}
   .section-head{max-width:620px; margin-bottom:52px;}
   .section-head .eyebrow{color:var(--steel);}
   .section-head .eyebrow::before{background:var(--steel);}
@@ -180,6 +182,16 @@
   }
   .track-error{color:#B04A2C; font-size:14.5px; margin-top:16px;}
   .track-loading{color:var(--muted); font-size:14.5px; margin-top:16px;}
+  #trackMap{
+    width:100%; height:220px; border-radius:4px; margin-top:8px;
+    border:1px solid rgba(12,27,42,0.1); display:none;
+  }
+  #trackMap.visible{display:block;}
+  .track-map-label{
+    font-size:13px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted);
+    margin-top:16px; display:none;
+  }
+  .track-map-label.visible{display:block;}
 
   /* SERVICES */
   .services{background:var(--fog);}
@@ -272,16 +284,16 @@
 <section class="hero">
   <div class="wrap hero-grid">
     <div>
-      <div class="eyebrow">Freight &amp; Distribution</div>
+      <div class="eyebrow">Global Freight &amp; Distribution</div>
       <h1>Your cargo, moving on schedule — every time.</h1>
-      <p class="lede">We handle freight forwarding, warehousing, and last-mile delivery across the region, so your shipments arrive on time without you chasing updates.</p>
+      <p class="lede">We handle freight forwarding, warehousing, and last-mile delivery worldwide, so your shipments arrive on time without you chasing updates.</p>
       <div class="hero-actions">
         <a href="#contact" class="btn btn-primary">Request a Quote</a>
         <a href="#services" class="btn btn-ghost">See Our Services</a>
       </div>
     </div>
     <div class="route-card">
-      <div class="route-label"><span>Origin: Port Harcourt</span><span>Destination: Lagos</span></div>
+      <div class="route-label"><span>Origin: Anywhere</span><span>Destination: Worldwide</span></div>
       <div class="route-track"><div class="route-dot"></div></div>
       <div class="route-endpoints"><span>Dispatched</span><span>In Transit</span><span>Delivered</span></div>
       <div class="route-stats">
@@ -303,10 +315,9 @@
     </form>
     <div id="trackMessage"></div>
     <div class="track-result" id="trackResult">
-      <div class="row"><div class="lbl">Tracking Number</div><div class="val" id="rTracking"></div></div>
-      <div class="row"><div class="lbl">Origin</div><div class="val" id="rOrigin"></div></div>
-      <div class="row"><div class="lbl">Destination</div><div class="val" id="rDestination"></div></div>
-      <div class="row"><div class="lbl">Status</div><div class="val"><span class="status-pill" id="rStatus"></span></div></div>
+      <div id="trackResultRows"></div>
+      <div id="trackMapLabel" class="track-map-label"></div>
+      <div id="trackMap"></div>
     </div>
   </div>
 </section>
@@ -382,7 +393,7 @@
       <p>Tell us what you're shipping and where — we'll get back to you with a quote within one business day.</p>
       <div class="info-row"><div class="lbl">Phone</div><div class="val">+234 800 000 0000</div></div>
       <div class="info-row"><div class="lbl">Email</div><div class="val">hello@swiftcargologistics.com</div></div>
-      <div class="info-row"><div class="lbl">Office</div><div class="val">Port Harcourt, Rivers State, Nigeria</div></div>
+      <div class="info-row"><div class="lbl">Office</div><div class="val">London, United Kingdom</div></div>
       <div class="info-row"><div class="lbl">Hours</div><div class="val">Mon–Sat, 8:00am–6:00pm</div></div>
     </div>
     <form>
@@ -453,11 +464,86 @@
 
       const fields = data.records[0].fields;
       trackMessage.innerHTML = '';
-      document.getElementById('rTracking').textContent = fields['Tracking Number'] || '—';
-      document.getElementById('rOrigin').textContent = fields['Origin'] || '—';
-      document.getElementById('rDestination').textContent = fields['Destination'] || '—';
-      document.getElementById('rStatus').textContent = fields['Current Status'] || '—';
+
+      const rowsContainer = document.getElementById('trackResultRows');
+      rowsContainer.innerHTML = '';
+
+      // Put Tracking Number first if present, then everything else in whatever
+      // order Airtable returns it. No field names are hardcoded here — add or
+      // rename columns in Airtable and they'll just show up.
+      const entries = Object.entries(fields);
+      entries.sort((a, b) => {
+        if (a[0].toLowerCase().includes('tracking')) return -1;
+        if (b[0].toLowerCase().includes('tracking')) return 1;
+        return 0;
+      });
+
+      let lat = null, lng = null, currentLocationLabel = null;
+
+      entries.forEach(([key, value]) => {
+        const keyLower = key.toLowerCase();
+
+        // Capture coordinates for the map instead of showing them as text rows
+        if (keyLower === 'latitude' || keyLower === 'lat') { lat = value; return; }
+        if (keyLower === 'longitude' || keyLower === 'lng' || keyLower === 'long') { lng = value; return; }
+        // Capture the human-readable current location to show above the map
+        if (keyLower === 'current location') { currentLocationLabel = value; return; }
+
+        const row = document.createElement('div');
+        row.className = 'row';
+
+        const label = document.createElement('div');
+        label.className = 'lbl';
+        label.textContent = key.replace(/[_-]/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim()
+          .split(' ')
+          .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+          .join(' ');
+
+        const val = document.createElement('div');
+        val.className = 'val';
+
+        if (keyLower.includes('status')) {
+          const pill = document.createElement('span');
+          pill.className = 'status-pill';
+          pill.textContent = value;
+          val.appendChild(pill);
+        } else {
+          val.textContent = value;
+        }
+
+        row.appendChild(label);
+        row.appendChild(val);
+        rowsContainer.appendChild(row);
+      });
+
       trackResult.classList.add('visible');
+
+      // Draw the shipment location map, if coordinates exist on this record
+      const mapEl = document.getElementById('trackMap');
+      const mapLabelEl = document.getElementById('trackMapLabel');
+
+      if (currentLocationLabel) {
+        mapLabelEl.textContent = 'Current Location: ' + currentLocationLabel;
+        mapLabelEl.classList.add('visible');
+      } else {
+        mapLabelEl.classList.remove('visible');
+      }
+
+      if (lat !== null && lng !== null && !isNaN(lat) && !isNaN(lng)) {
+        mapEl.classList.add('visible');
+        mapEl.innerHTML = '';
+        const map = L.map(mapEl).setView([lat, lng], 11);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+        L.marker([lat, lng]).addTo(map);
+        setTimeout(() => map.invalidateSize(), 100);
+      } else {
+        mapEl.classList.remove('visible');
+        mapEl.innerHTML = '';
+      }
 
     } catch(err){
       trackMessage.innerHTML = '<p class="track-error">Something went wrong looking that up. Please try again in a moment.</p>';
