@@ -195,14 +195,19 @@
 
   /* COURIER PHOTO BANNER */
   .courier-banner{
-    width:100%; height:340px; overflow:hidden; position:relative;
-    background:var(--fog); display:flex; align-items:center; justify-content:center;
+    width:100%; min-height:760px; overflow:hidden; position:relative;
+    background:var(--fog); display:flex; align-items:flex-end; justify-content:center;
+    padding-top:20px;
   }
   .courier-banner img{
-    height:100%; width:auto; max-width:100%; object-fit:contain; display:block;
+    height:auto; width:auto; max-height:900px; max-width:98%; object-fit:contain; display:block;
   }
   .courier-banner::after{
     content:none;
+  }
+  @media (max-width: 640px){
+    .courier-banner{min-height:520px;}
+    .courier-banner img{max-height:560px;}
   }
 
   /* SERVICES */
